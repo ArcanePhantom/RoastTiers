@@ -118,7 +118,8 @@
       <textarea id="signupBio" placeholder="Tell us about yourself..."></textarea>
       <label for="signupLinks">Links (comma separated)</label>
       <input type="text" id="signupLinks" placeholder="https://github.com/ArcanePhantom, https://discord.gg/xyz">
-      <label><input type="checkbox" id="signupAdmin"> Admin</label>
+      <label for="signupAdminCode">Admin Code <span style="font-weight:normal;color:#aaa">(leave blank unless you want admin)</span></label>
+      <input type="text" id="signupAdminCode" placeholder="Secret admin code">
       <button type="submit">Sign Up</button>
     </form>
     <div class="center">
@@ -150,6 +151,8 @@
 
   <script>
     // ====== Data and State ======
+    const ADMIN_SECRET_CODE = "neelissostinky";
+
     function getUsers() {
       return JSON.parse(localStorage.getItem("users") || "[]");
     }
@@ -256,10 +259,14 @@
       const password = hash(document.getElementById("signupPass").value);
       const bio = document.getElementById("signupBio").value.trim();
       const links = document.getElementById("signupLinks").value.trim().split(",").map(l=>l.trim()).filter(l=>l);
-      const isAdmin = document.getElementById("signupAdmin").checked;
+      const adminCode = document.getElementById("signupAdminCode").value.trim();
       if (!username || !password) return alert("Username and password required!");
       const users = getUsers();
       if (users.find(u => u.username.toLowerCase() === username.toLowerCase())) return alert("Username already exists!");
+      const isAdmin = (adminCode === ADMIN_SECRET_CODE);
+      if (adminCode && !isAdmin) {
+        alert("Incorrect admin code! You'll be registered as a regular user.");
+      }
       users.push({username, password, isAdmin, bio, links});
       saveUsers(users);
       setLoggedInUser(username);
