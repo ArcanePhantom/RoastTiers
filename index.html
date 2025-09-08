@@ -47,6 +47,7 @@
     form label { display: block; margin-bottom: 3px; font-weight: 500; }
     .tier { margin: 22px auto; padding: 10px; border: 2px solid #ff6600; border-radius: 8px; background: #222; }
     .tier-list { list-style: none; padding: 0; margin: 10px 0 0 0; color: lime; }
+    .tier-list .user-link { color: lime; text-decoration: underline; cursor: pointer; }
     .delete-btn {
       background: none;
       color: #f66;
@@ -64,6 +65,8 @@
     .profile-info { margin-bottom: 22px; }
     .profile-label { font-weight: 600; color: orange; }
     .center { text-align: center; }
+    .back-btn { margin-top: 12px; background: #444; color: #fff; border: none; padding: 8px 18px; border-radius: 5px; cursor: pointer; }
+    .back-btn:hover { background: #666; }
     @media (max-width: 600px) {
       .container { max-width: 96vw; padding: 15px 6vw; }
       .navbar { flex-wrap: wrap; }
@@ -88,8 +91,8 @@
     <div class="tier" id="LT4"><b>LT4</b> – Struggle Burns<ul class="tier-list"></ul></div>
     <div class="tier" id="LT5"><b>LT5</b> – Bottom of the barrel<ul class="tier-list"></ul></div>
     <form id="adminForm" class="hidden">
-      <label for="username">Add name to tier:</label>
-      <input type="text" id="username" placeholder="Name" required>
+      <label for="userSelect">Add account to tier:</label>
+      <select id="userSelect"></select>
       <select id="tier">
         <option value="HT1">HT1 – Roast Gods</option>
         <option value="HT2">HT2 – Elite Roasters</option>
@@ -102,7 +105,7 @@
         <option value="LT4">LT4 – Struggle Burns</option>
         <option value="LT5">LT5 – Bottom of the barrel</option>
       </select>
-      <button type="submit">Add Name</button>
+      <button type="submit">Add to Tier</button>
     </form>
   </div>
 
@@ -141,7 +144,7 @@
   </div>
 
   <div id="profilePage" class="container hidden">
-    <h2 class="center">Your Profile</h2>
+    <h2 class="center">User Profile</h2>
     <div class="profile-info">
       <div><span class="profile-label">Username:</span> <span id="profileName"></span></div>
       <div><span class="profile-label">Bio:</span> <span id="profileBio"></span></div>
@@ -157,14 +160,14 @@
       <input type="text" id="editLinks">
       <button type="submit">Update Profile</button>
     </form>
-    <div class="center">
-      <button onclick="logout()">Logout</button>
+    <div class="center" id="profileBackBtnContainer">
     </div>
   </div>
 
   <script>
     // ====== Data and State ======
     const ADMIN_SECRET_CODE = "neelissostinky";
+    let viewingUser = null; // for viewing other people's profiles
 
     function getUsers() {
       return JSON.parse(localStorage.getItem("users") || "[]");
@@ -207,7 +210,7 @@
       const user = getUsers().find(u => u.username === getLoggedInUser());
       let html = "";
       if (user) {
-        html += `<button class="${activePage==='profilePage' ? 'active' : ''}" onclick="showPage('profilePage')">Your Profile</button>`;
+        html += `<button class="${activePage==='profilePage' ? 'active' : ''}" onclick="showPage('profilePage', getLoggedInUser())">Your Profile</button>`;
         html += `<button class="${activePage==='tiersPage' ? 'active' : ''}" onclick="showPage('tiersPage')">Tiers</button>`;
         html += `<button onclick="logout()">Logout</button>`;
       } else {
@@ -219,7 +222,7 @@
     }
 
     // ===== Page Switching =====
-    function showPage(pageId) {
+    function showPage(pageId, username) {
       document.getElementById('tiersPage').classList.add('hidden');
       document.getElementById('loginPage').classList.add('hidden');
       document.getElementById('signupPage').classList.add('hidden');
@@ -228,43 +231,51 @@
       renderNavbar(pageId);
 
       // Special actions per page
-      if (pageId === 'tiersPage') renderTiers();
-      if (pageId === 'tiersPage') checkAdminForm();
-      if (pageId === 'profilePage') renderProfile();
+      if (pageId === 'tiersPage') {
+        renderTiers();
+        checkAdminForm();
+      }
+      if (pageId === 'profilePage') {
+        renderProfile(username);
+      }
     }
 
     // ===== Tiers =====
     document.getElementById("adminForm").addEventListener("submit", function(e) {
       e.preventDefault();
-      const name = document.getElementById("username").value.trim();
+      const username = document.getElementById("userSelect").value;
       const tier = document.getElementById("tier").value;
-      if (name) {
+      if (username) {
         const tiers = getTiers();
-        tiers[tier].push(name);
+        if (tiers[tier].includes(username)) {
+          alert("User is already in this tier!");
+          return;
+        }
+        tiers[tier].push(username);
         saveTiers(tiers);
         renderTiers();
-        document.getElementById("username").value = "";
       }
     });
 
     function renderTiers() {
       const tiers = getTiers();
-      const user = getUsers().find(u => u.username === getLoggedInUser());
+      const users = getUsers();
+      const user = users.find(u => u.username === getLoggedInUser());
       const isAdmin = !!(user && user.isAdmin);
 
       Object.keys(tiers).forEach(tier => {
         const ul = document.querySelector(`#${tier} .tier-list`);
         ul.innerHTML = "";
-        tiers[tier].forEach((person, idx) => {
+        tiers[tier].forEach((username, idx) => {
           const li = document.createElement("li");
-          li.textContent = person;
+          li.innerHTML = `<span class="user-link" onclick="viewUserProfile('${encodeURIComponent(username)}')">${username}</span>`;
           if (isAdmin) {
             const delBtn = document.createElement("button");
             delBtn.className = "delete-btn";
             delBtn.title = "Remove";
             delBtn.textContent = "🗑️";
             delBtn.onclick = function() {
-              if (confirm(`Remove "${person}" from ${tier}?`)) {
+              if (confirm(`Remove "${username}" from ${tier}?`)) {
                 tiers[tier].splice(idx, 1);
                 saveTiers(tiers);
                 renderTiers();
@@ -279,7 +290,19 @@
 
     function checkAdminForm() {
       const user = getUsers().find(u => u.username === getLoggedInUser());
-      document.getElementById("adminForm").classList.toggle("hidden", !(user && user.isAdmin));
+      const isAdmin = !!(user && user.isAdmin);
+      document.getElementById("adminForm").classList.toggle("hidden", !isAdmin);
+
+      // Populate userSelect dropdown with signed-up users
+      const userSelect = document.getElementById("userSelect");
+      const users = getUsers();
+      userSelect.innerHTML = "";
+      users.forEach(u => {
+        const option = document.createElement("option");
+        option.value = u.username;
+        option.textContent = u.username;
+        userSelect.appendChild(option);
+      });
     }
 
     // ===== Login / Signup =====
@@ -318,9 +341,13 @@
     });
 
     // ===== Profile & Edit =====
-    function renderProfile() {
-      const user = getUsers().find(u => u.username === getLoggedInUser());
+    function renderProfile(username) {
+      const users = getUsers();
+      username = username || getLoggedInUser();
+      viewingUser = username;
+      const user = users.find(u => u.username === username);
       if (!user) return;
+
       document.getElementById("profileName").textContent = user.username;
       document.getElementById("profileBio").textContent = user.bio || "(none)";
       document.getElementById("profileAdmin").textContent = user.isAdmin ? "Yes" : "No";
@@ -331,8 +358,25 @@
         li.innerHTML = `<a href="${link}" target="_blank" style="color:lime">${link}</a>`;
         ul.appendChild(li);
       });
-      document.getElementById("editBio").value = user.bio || "";
-      document.getElementById("editLinks").value = (user.links || []).join(", ");
+
+      // Only show edit form for own account
+      document.getElementById("editProfileForm").style.display =
+        (username === getLoggedInUser()) ? "block" : "none";
+
+      // Show a "Back to Tiers" button when viewing someone else's profile
+      const backBtnContainer = document.getElementById("profileBackBtnContainer");
+      backBtnContainer.innerHTML = "";
+      if (username !== getLoggedInUser()) {
+        const backBtn = document.createElement("button");
+        backBtn.textContent = "Back to Tiers";
+        backBtn.className = "back-btn";
+        backBtn.onclick = function() {
+          showPage('tiersPage');
+        };
+        backBtnContainer.appendChild(backBtn);
+      } else {
+        // You can add a logout or other buttons here if you want
+      }
     }
 
     document.getElementById("editProfileForm").addEventListener("submit", function(e) {
@@ -340,19 +384,25 @@
       const bio = document.getElementById("editBio").value.trim();
       const links = document.getElementById("editLinks").value.trim().split(",").map(l=>l.trim()).filter(l=>l);
       const users = getUsers();
-      const user = getLoggedInUser();
-      const idx = users.findIndex(u => u.username === user);
+      const username = getLoggedInUser();
+      const idx = users.findIndex(u => u.username === username);
       if (idx === -1) return alert("User not found!");
       users[idx].bio = bio;
       users[idx].links = links;
       saveUsers(users);
-      renderProfile();
+      renderProfile(username);
       alert("Profile updated!");
     });
+
+    function viewUserProfile(username) {
+      showPage('profilePage', decodeURIComponent(username));
+    }
+    window.viewUserProfile = viewUserProfile; // For inline onclick
 
     // ===== Logout =====
     function logout() {
       localStorage.removeItem("currentUser");
+      viewingUser = null;
       showPage('tiersPage');
     }
 
