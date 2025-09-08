@@ -47,6 +47,19 @@
     form label { display: block; margin-bottom: 3px; font-weight: 500; }
     .tier { margin: 22px auto; padding: 10px; border: 2px solid #ff6600; border-radius: 8px; background: #222; }
     .tier-list { list-style: none; padding: 0; margin: 10px 0 0 0; color: lime; }
+    .delete-btn {
+      background: none;
+      color: #f66;
+      border: none;
+      font-size: 1.1em;
+      margin-left: 8px;
+      cursor: pointer;
+      border-radius: 3px;
+      padding: 0 5px;
+      vertical-align: middle;
+      transition: background 0.2s;
+    }
+    .delete-btn:hover { background: #333; }
     .link-list { list-style: none; padding: 0; }
     .profile-info { margin-bottom: 22px; }
     .profile-label { font-weight: 600; color: orange; }
@@ -167,18 +180,27 @@
     }
     function hash(s) { return btoa(s); }
 
-    const tiers = {
-      HT1: [],
-      HT2: [],
-      HT3: [],
-      HT4: [],
-      HT5: [],
-      LT1: [],
-      LT2: [],
-      LT3: [],
-      LT4: [],
-      LT5: []
-    };
+    // Store tiers in localStorage for persistence
+    function getTiers() {
+      const stored = localStorage.getItem("tiers");
+      if (stored) return JSON.parse(stored);
+      // Initial blank tiers if none exist
+      return {
+        HT1: [],
+        HT2: [],
+        HT3: [],
+        HT4: [],
+        HT5: [],
+        LT1: [],
+        LT2: [],
+        LT3: [],
+        LT4: [],
+        LT5: []
+      };
+    }
+    function saveTiers(tiers) {
+      localStorage.setItem("tiers", JSON.stringify(tiers));
+    }
 
     // ===== Navbar =====
     function renderNavbar(activePage) {
@@ -206,6 +228,7 @@
       renderNavbar(pageId);
 
       // Special actions per page
+      if (pageId === 'tiersPage') renderTiers();
       if (pageId === 'tiersPage') checkAdminForm();
       if (pageId === 'profilePage') renderProfile();
     }
@@ -216,22 +239,43 @@
       const name = document.getElementById("username").value.trim();
       const tier = document.getElementById("tier").value;
       if (name) {
+        const tiers = getTiers();
         tiers[tier].push(name);
-        updateTierDisplay(tier);
+        saveTiers(tiers);
+        renderTiers();
         document.getElementById("username").value = "";
       }
     });
 
-    function updateTierDisplay(tier) {
-      const ul = document.querySelector(`#${tier} .tier-list`);
-      ul.innerHTML = "";
-      tiers[tier].forEach(person => {
-        const li = document.createElement("li");
-        li.textContent = person;
-        ul.appendChild(li);
+    function renderTiers() {
+      const tiers = getTiers();
+      const user = getUsers().find(u => u.username === getLoggedInUser());
+      const isAdmin = !!(user && user.isAdmin);
+
+      Object.keys(tiers).forEach(tier => {
+        const ul = document.querySelector(`#${tier} .tier-list`);
+        ul.innerHTML = "";
+        tiers[tier].forEach((person, idx) => {
+          const li = document.createElement("li");
+          li.textContent = person;
+          if (isAdmin) {
+            const delBtn = document.createElement("button");
+            delBtn.className = "delete-btn";
+            delBtn.title = "Remove";
+            delBtn.textContent = "🗑️";
+            delBtn.onclick = function() {
+              if (confirm(`Remove "${person}" from ${tier}?`)) {
+                tiers[tier].splice(idx, 1);
+                saveTiers(tiers);
+                renderTiers();
+              }
+            };
+            li.appendChild(delBtn);
+          }
+          ul.appendChild(li);
+        });
       });
     }
-    Object.keys(tiers).forEach(updateTierDisplay);
 
     function checkAdminForm() {
       const user = getUsers().find(u => u.username === getLoggedInUser());
