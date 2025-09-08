@@ -2,93 +2,154 @@
 <html>
 <head>
   <title>RoastTiers 😈🔥</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
   <style>
-    body { font-family: Arial, sans-serif; background: #111; color: #fff; text-align: center; padding: 50px; }
-    h1 { color: orange; }
-    .tier { margin: 20px auto; padding: 10px; border: 2px solid #ff6600; border-radius: 8px; background: #222; max-width: 400px; }
+    body { font-family: 'Segoe UI', Arial, sans-serif; background: #111; color: #fff; margin: 0; }
+    h1, h2, h3 { color: orange; margin-bottom: 10px; }
+    .navbar {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: #222;
+      padding: 14px 0;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .navbar button {
+      color: #fff;
+      background: none;
+      border: none;
+      font-size: 1rem;
+      font-weight: bold;
+      margin: 0 12px;
+      cursor: pointer;
+      padding: 6px 16px;
+      border-radius: 4px;
+      transition: background 0.2s;
+    }
+    .navbar button:hover, .navbar .active {
+      background: #444;
+    }
+    .container { max-width: 420px; margin: 40px auto 0 auto; background: #222; border-radius: 12px; padding: 30px 22px; box-shadow: 0 4px 24px #0006; }
+    .hidden { display: none; }
+    input, select, button, textarea {
+      width: 100%;
+      padding: 10px;
+      margin: 8px 0 20px 0;
+      border-radius: 4px;
+      border: none;
+      font-size: 1rem;
+      background: #333;
+      color: #fff;
+    }
+    button[type="submit"] { background: orange; color: #222; font-weight: bold; }
+    form label { display: block; margin-bottom: 3px; font-weight: 500; }
+    .tier { margin: 22px auto; padding: 10px; border: 2px solid #ff6600; border-radius: 8px; background: #222; }
     .tier-list { list-style: none; padding: 0; margin: 10px 0 0 0; color: lime; }
-    #adminForm, #logoutBtn, #profileBtn, #accountPage, #changePassForm { display: none; }
-    #loginForm, #signupForm { margin-bottom: 30px; }
-    input, select, button { padding: 8px; margin: 5px; border-radius: 4px; border: none; }
-    .pfp { width: 80px; height: 80px; border-radius: 50%; margin-bottom: 10px; object-fit: cover; }
     .link-list { list-style: none; padding: 0; }
+    .profile-info { margin-bottom: 22px; }
+    .profile-label { font-weight: 600; color: orange; }
+    .center { text-align: center; }
+    @media (max-width: 600px) {
+      .container { max-width: 96vw; padding: 15px 6vw; }
+      .navbar { flex-wrap: wrap; }
+    }
   </style>
 </head>
 <body>
-  <h1>🔥 RoastTiers 😈</h1>
-  <p>The official ladder for the best (and worst) roasters.</p>
+  <!-- Navbar -->
+  <nav class="navbar" id="navbar"></nav>
 
-  <!-- Login form -->
-  <form id="loginForm">
-    <input type="text" id="loginUser" placeholder="Username" required>
-    <input type="password" id="loginPass" placeholder="Password" required>
-    <button type="submit">Login</button>
-    <p>or <a href="#" onclick="showSignup()">Sign Up</a></p>
-  </form>
-
-  <!-- Signup form -->
-  <form id="signupForm">
-    <input type="text" id="signupUser" placeholder="Username" required>
-    <input type="password" id="signupPass" placeholder="Password" required>
-    <input type="text" id="signupBio" placeholder="Bio">
-    <input type="text" id="signupLinks" placeholder="Links (comma-separated)">
-    <input type="text" id="signupPfp" placeholder="Profile Pic URL (optional)">
-    <label><input type="checkbox" id="signupAdmin"> Admin</label>
-    <button type="submit">Sign Up</button>
-    <p>Already have an account? <a href="#" onclick="showLogin()">Log In</a></p>
-  </form>
-
-  <!-- Admin form -->
-  <form id="adminForm">
-    <input type="text" id="username" placeholder="Name to add" required>
-    <select id="tier">
-      <option value="HT1">HT1 – Roast Gods</option>
-      <option value="HT2">HT2 – Elite Roasters</option>
-      <option value="HT3">HT3 – Consistent Burners</option>
-      <option value="HT4">HT4 – Crowd-Pleasers</option>
-      <option value="HT5">HT5 – Average Roasters</option>
-      <option value="LT1">LT1 – Decent but shaky</option>
-      <option value="LT2">LT2 – Weak sauce</option>
-      <option value="LT3">LT3 – Kinda funny sometimes</option>
-      <option value="LT4">LT4 – Struggle Burns</option>
-      <option value="LT5">LT5 – Bottom of the barrel</option>
-    </select>
-    <button type="submit">Add Name</button>
-  </form>
-  <button id="logoutBtn">Logout</button>
-  <button id="profileBtn">My Account</button>
-
-  <!-- Account/Profile Page -->
-  <div id="accountPage">
-    <img id="accountPfp" class="pfp" src="" alt="Profile Pic">
-    <h2 id="accountName"></h2>
-    <p id="accountBio"></p>
-    <ul id="accountLinks" class="link-list"></ul>
-    <button onclick="showChangePass()">Change Password</button>
-    <button onclick="hideAccount()">Back</button>
+  <!-- Pages -->
+  <div id="tiersPage" class="container">
+    <h1>🔥 RoastTiers 😈</h1>
+    <div class="tier" id="HT1"><b>HT1</b> – Roast Gods<ul class="tier-list"></ul></div>
+    <div class="tier" id="HT2"><b>HT2</b> – Elite Roasters<ul class="tier-list"></ul></div>
+    <div class="tier" id="HT3"><b>HT3</b> – Consistent Burners<ul class="tier-list"></ul></div>
+    <div class="tier" id="HT4"><b>HT4</b> – Crowd-Pleasers<ul class="tier-list"></ul></div>
+    <div class="tier" id="HT5"><b>HT5</b> – Average Roasters<ul class="tier-list"></ul></div>
+    <div class="tier" id="LT1"><b>LT1</b> – Decent but shaky<ul class="tier-list"></ul></div>
+    <div class="tier" id="LT2"><b>LT2</b> – Weak sauce<ul class="tier-list"></ul></div>
+    <div class="tier" id="LT3"><b>LT3</b> – Kinda funny sometimes<ul class="tier-list"></ul></div>
+    <div class="tier" id="LT4"><b>LT4</b> – Struggle Burns<ul class="tier-list"></ul></div>
+    <div class="tier" id="LT5"><b>LT5</b> – Bottom of the barrel<ul class="tier-list"></ul></div>
+    <form id="adminForm" class="hidden">
+      <label for="username">Add name to tier:</label>
+      <input type="text" id="username" placeholder="Name" required>
+      <select id="tier">
+        <option value="HT1">HT1 – Roast Gods</option>
+        <option value="HT2">HT2 – Elite Roasters</option>
+        <option value="HT3">HT3 – Consistent Burners</option>
+        <option value="HT4">HT4 – Crowd-Pleasers</option>
+        <option value="HT5">HT5 – Average Roasters</option>
+        <option value="LT1">LT1 – Decent but shaky</option>
+        <option value="LT2">LT2 – Weak sauce</option>
+        <option value="LT3">LT3 – Kinda funny sometimes</option>
+        <option value="LT4">LT4 – Struggle Burns</option>
+        <option value="LT5">LT5 – Bottom of the barrel</option>
+      </select>
+      <button type="submit">Add Name</button>
+    </form>
   </div>
 
-  <!-- Change Password Form -->
-  <form id="changePassForm">
-    <input type="password" id="oldPass" placeholder="Old password" required>
-    <input type="password" id="newPass" placeholder="New password" required>
-    <button type="submit">Change Password</button>
-    <button type="button" onclick="hideChangePass()">Cancel</button>
-  </form>
+  <div id="loginPage" class="container hidden">
+    <h2 class="center">Login</h2>
+    <form id="loginForm">
+      <label for="loginUser">Username</label>
+      <input type="text" id="loginUser" placeholder="Username" required>
+      <label for="loginPass">Password</label>
+      <input type="password" id="loginPass" placeholder="Password" required>
+      <button type="submit">Login</button>
+    </form>
+    <div class="center">
+      <span>Don't have an account? <button onclick="showPage('signupPage')">Sign Up</button></span>
+    </div>
+  </div>
 
-  <!-- Tier lists -->
-  <div class="tier" id="HT1"><b>HT1</b> – Roast Gods<ul class="tier-list"></ul></div>
-  <div class="tier" id="HT2"><b>HT2</b> – Elite Roasters<ul class="tier-list"></ul></div>
-  <div class="tier" id="HT3"><b>HT3</b> – Consistent Burners<ul class="tier-list"></ul></div>
-  <div class="tier" id="HT4"><b>HT4</b> – Crowd-Pleasers<ul class="tier-list"></ul></div>
-  <div class="tier" id="HT5"><b>HT5</b> – Average Roasters<ul class="tier-list"></ul></div>
-  <div class="tier" id="LT1"><b>LT1</b> – Decent but shaky<ul class="tier-list"></ul></div>
-  <div class="tier" id="LT2"><b>LT2</b> – Weak sauce<ul class="tier-list"></ul></div>
-  <div class="tier" id="LT3"><b>LT3</b> – Kinda funny sometimes<ul class="tier-list"></ul></div>
-  <div class="tier" id="LT4"><b>LT4</b> – Struggle Burns<ul class="tier-list"></ul></div>
-  <div class="tier" id="LT5"><b>LT5</b> – Bottom of the barrel<ul class="tier-list"></ul></div>
+  <div id="signupPage" class="container hidden">
+    <h2 class="center">Sign Up</h2>
+    <form id="signupForm">
+      <label for="signupUser">Username</label>
+      <input type="text" id="signupUser" placeholder="Username" required>
+      <label for="signupPass">Password</label>
+      <input type="password" id="signupPass" placeholder="Password" required>
+      <label for="signupBio">Bio</label>
+      <textarea id="signupBio" placeholder="Tell us about yourself..."></textarea>
+      <label for="signupLinks">Links (comma separated)</label>
+      <input type="text" id="signupLinks" placeholder="https://github.com/ArcanePhantom, https://discord.gg/xyz">
+      <label><input type="checkbox" id="signupAdmin"> Admin</label>
+      <button type="submit">Sign Up</button>
+    </form>
+    <div class="center">
+      <span>Already have an account? <button onclick="showPage('loginPage')">Login</button></span>
+    </div>
+  </div>
+
+  <div id="profilePage" class="container hidden">
+    <h2 class="center">Your Profile</h2>
+    <div class="profile-info">
+      <div><span class="profile-label">Username:</span> <span id="profileName"></span></div>
+      <div><span class="profile-label">Bio:</span> <span id="profileBio"></span></div>
+      <div><span class="profile-label">Links:</span>
+        <ul id="profileLinks" class="link-list"></ul>
+      </div>
+      <div><span class="profile-label">Admin:</span> <span id="profileAdmin"></span></div>
+    </div>
+    <form id="editProfileForm">
+      <label for="editBio">Edit Bio</label>
+      <textarea id="editBio"></textarea>
+      <label for="editLinks">Edit Links (comma separated)</label>
+      <input type="text" id="editLinks">
+      <button type="submit">Update Profile</button>
+    </form>
+    <div class="center">
+      <button onclick="logout()">Logout</button>
+    </div>
+  </div>
+
   <script>
-    // ========== Account System ==========
+    // ====== Data and State ======
     function getUsers() {
       return JSON.parse(localStorage.getItem("users") || "[]");
     }
@@ -101,121 +162,8 @@
     function setLoggedInUser(username) {
       localStorage.setItem("currentUser", username);
     }
-    function hash(s) {
-      // Simple fake hash for demo purposes
-      return btoa(s);
-    }
+    function hash(s) { return btoa(s); }
 
-    // ========== UI Toggle ==========
-    function showLogin() {
-      document.getElementById("loginForm").style.display = "block";
-      document.getElementById("signupForm").style.display = "none";
-      document.getElementById("adminForm").style.display = "none";
-      document.getElementById("logoutBtn").style.display = "none";
-      document.getElementById("profileBtn").style.display = "none";
-      document.getElementById("accountPage").style.display = "none";
-      document.getElementById("changePassForm").style.display = "none";
-    }
-    function showSignup() {
-      document.getElementById("loginForm").style.display = "none";
-      document.getElementById("signupForm").style.display = "block";
-      document.getElementById("adminForm").style.display = "none";
-      document.getElementById("logoutBtn").style.display = "none";
-      document.getElementById("profileBtn").style.display = "none";
-      document.getElementById("accountPage").style.display = "none";
-      document.getElementById("changePassForm").style.display = "none";
-    }
-    function showAccount() {
-      var user = getUsers().find(u => u.username === getLoggedInUser());
-      if(!user) return;
-      document.getElementById("accountPfp").src = user.pfp || "https://avatars.githubusercontent.com/u/583231?v=4";
-      document.getElementById("accountName").textContent = user.username;
-      document.getElementById("accountBio").textContent = user.bio;
-      var links = user.links ? user.links : [];
-      const ul = document.getElementById("accountLinks");
-      ul.innerHTML = "";
-      links.forEach(link => {
-        const li = document.createElement("li");
-        li.innerHTML = `<a href="${link}" target="_blank">${link}</a>`;
-        ul.appendChild(li);
-      });
-      document.getElementById("accountPage").style.display = "block";
-      document.getElementById("adminForm").style.display = "none";
-      document.getElementById("loginForm").style.display = "none";
-      document.getElementById("signupForm").style.display = "none";
-      document.getElementById("changePassForm").style.display = "none";
-      document.getElementById("profileBtn").style.display = "none";
-      document.getElementById("logoutBtn").style.display = "block";
-    }
-    function hideAccount() {
-      checkLogin();
-    }
-    function showChangePass() {
-      document.getElementById("accountPage").style.display = "none";
-      document.getElementById("changePassForm").style.display = "block";
-    }
-    function hideChangePass() {
-      document.getElementById("changePassForm").style.display = "none";
-      showAccount();
-    }
-
-    // ========== Login / Signup ==========
-    document.getElementById("loginForm").addEventListener("submit", function(e) {
-      e.preventDefault();
-      const user = document.getElementById("loginUser").value;
-      const pass = hash(document.getElementById("loginPass").value);
-      const users = getUsers();
-      const found = users.find(u => u.username === user && u.password === pass);
-      if(found) {
-        setLoggedInUser(user);
-        checkLogin();
-      } else {
-        alert("Incorrect login!");
-      }
-    });
-
-    document.getElementById("signupForm").addEventListener("submit", function(e) {
-      e.preventDefault();
-      const username = document.getElementById("signupUser").value.trim();
-      const password = hash(document.getElementById("signupPass").value);
-      const bio = document.getElementById("signupBio").value.trim();
-      const links = document.getElementById("signupLinks").value.trim().split(",").map(l=>l.trim()).filter(l=>l);
-      const pfp = document.getElementById("signupPfp").value.trim();
-      const isAdmin = document.getElementById("signupAdmin").checked;
-      if(!username || !password) return alert("Username and password required!");
-      const users = getUsers();
-      if(users.find(u => u.username === username)) return alert("Username already exists!");
-      users.push({username, password, isAdmin, bio, links, pfp});
-      saveUsers(users);
-      setLoggedInUser(username);
-      checkLogin();
-    });
-
-    document.getElementById("changePassForm").addEventListener("submit", function(e) {
-      e.preventDefault();
-      const oldPass = hash(document.getElementById("oldPass").value);
-      const newPass = hash(document.getElementById("newPass").value);
-      const users = getUsers();
-      const user = getLoggedInUser();
-      const idx = users.findIndex(u => u.username === user);
-      if(idx === -1) return alert("User not found!");
-      if(users[idx].password !== oldPass) return alert("Old password incorrect!");
-      users[idx].password = newPass;
-      saveUsers(users);
-      alert("Password changed!");
-      hideChangePass();
-    });
-
-    // ========== Logout/Profile ==========
-    document.getElementById("logoutBtn").addEventListener("click", function() {
-      localStorage.removeItem("currentUser");
-      checkLogin();
-    });
-    document.getElementById("profileBtn").addEventListener("click", function() {
-      showAccount();
-    });
-
-    // ========== Admin Tier Adding ==========
     const tiers = {
       HT1: [],
       HT2: [],
@@ -229,11 +177,42 @@
       LT5: []
     };
 
+    // ===== Navbar =====
+    function renderNavbar(activePage) {
+      const user = getUsers().find(u => u.username === getLoggedInUser());
+      let html = "";
+      if (user) {
+        html += `<button class="${activePage==='profilePage' ? 'active' : ''}" onclick="showPage('profilePage')">Your Profile</button>`;
+        html += `<button class="${activePage==='tiersPage' ? 'active' : ''}" onclick="showPage('tiersPage')">Tiers</button>`;
+        html += `<button onclick="logout()">Logout</button>`;
+      } else {
+        html += `<button class="${activePage==='tiersPage' ? 'active' : ''}" onclick="showPage('tiersPage')">Tiers</button>`;
+        html += `<button class="${activePage==='loginPage' ? 'active' : ''}" onclick="showPage('loginPage')">Login</button>`;
+        html += `<button class="${activePage==='signupPage' ? 'active' : ''}" onclick="showPage('signupPage')">Sign Up</button>`;
+      }
+      document.getElementById("navbar").innerHTML = html;
+    }
+
+    // ===== Page Switching =====
+    function showPage(pageId) {
+      document.getElementById('tiersPage').classList.add('hidden');
+      document.getElementById('loginPage').classList.add('hidden');
+      document.getElementById('signupPage').classList.add('hidden');
+      document.getElementById('profilePage').classList.add('hidden');
+      document.getElementById(pageId).classList.remove('hidden');
+      renderNavbar(pageId);
+
+      // Special actions per page
+      if (pageId === 'tiersPage') checkAdminForm();
+      if (pageId === 'profilePage') renderProfile();
+    }
+
+    // ===== Tiers =====
     document.getElementById("adminForm").addEventListener("submit", function(e) {
       e.preventDefault();
       const name = document.getElementById("username").value.trim();
       const tier = document.getElementById("tier").value;
-      if(name) {
+      if (name) {
         tiers[tier].push(name);
         updateTierDisplay(tier);
         document.getElementById("username").value = "";
@@ -249,29 +228,87 @@
         ul.appendChild(li);
       });
     }
+    Object.keys(tiers).forEach(updateTierDisplay);
 
-    // ========== Login State Check ==========
-    function checkLogin() {
+    function checkAdminForm() {
       const user = getUsers().find(u => u.username === getLoggedInUser());
-      if(user) {
-        document.getElementById("logoutBtn").style.display = "inline-block";
-        document.getElementById("profileBtn").style.display = "inline-block";
-        if(user.isAdmin) {
-          document.getElementById("adminForm").style.display = "block";
-        } else {
-          document.getElementById("adminForm").style.display = "none";
-        }
-        document.getElementById("loginForm").style.display = "none";
-        document.getElementById("signupForm").style.display = "none";
-        document.getElementById("accountPage").style.display = "none";
-        document.getElementById("changePassForm").style.display = "none";
-      } else {
-        showLogin();
-      }
+      document.getElementById("adminForm").classList.toggle("hidden", !(user && user.isAdmin));
     }
 
-    // Initial state
-    checkLogin();
+    // ===== Login / Signup =====
+    document.getElementById("loginForm").addEventListener("submit", function(e) {
+      e.preventDefault();
+      const user = document.getElementById("loginUser").value.trim();
+      const pass = hash(document.getElementById("loginPass").value);
+      const users = getUsers();
+      const found = users.find(u => u.username === user && u.password === pass);
+      if (found) {
+        setLoggedInUser(user);
+        showPage('tiersPage');
+      } else {
+        alert("Incorrect login!");
+      }
+    });
+
+    document.getElementById("signupForm").addEventListener("submit", function(e) {
+      e.preventDefault();
+      const username = document.getElementById("signupUser").value.trim();
+      const password = hash(document.getElementById("signupPass").value);
+      const bio = document.getElementById("signupBio").value.trim();
+      const links = document.getElementById("signupLinks").value.trim().split(",").map(l=>l.trim()).filter(l=>l);
+      const isAdmin = document.getElementById("signupAdmin").checked;
+      if (!username || !password) return alert("Username and password required!");
+      const users = getUsers();
+      if (users.find(u => u.username.toLowerCase() === username.toLowerCase())) return alert("Username already exists!");
+      users.push({username, password, isAdmin, bio, links});
+      saveUsers(users);
+      setLoggedInUser(username);
+      showPage('tiersPage');
+    });
+
+    // ===== Profile & Edit =====
+    function renderProfile() {
+      const user = getUsers().find(u => u.username === getLoggedInUser());
+      if (!user) return;
+      document.getElementById("profileName").textContent = user.username;
+      document.getElementById("profileBio").textContent = user.bio || "(none)";
+      document.getElementById("profileAdmin").textContent = user.isAdmin ? "Yes" : "No";
+      const ul = document.getElementById("profileLinks");
+      ul.innerHTML = "";
+      (user.links || []).forEach(link => {
+        const li = document.createElement("li");
+        li.innerHTML = `<a href="${link}" target="_blank" style="color:lime">${link}</a>`;
+        ul.appendChild(li);
+      });
+      document.getElementById("editBio").value = user.bio || "";
+      document.getElementById("editLinks").value = (user.links || []).join(", ");
+    }
+
+    document.getElementById("editProfileForm").addEventListener("submit", function(e) {
+      e.preventDefault();
+      const bio = document.getElementById("editBio").value.trim();
+      const links = document.getElementById("editLinks").value.trim().split(",").map(l=>l.trim()).filter(l=>l);
+      const users = getUsers();
+      const user = getLoggedInUser();
+      const idx = users.findIndex(u => u.username === user);
+      if (idx === -1) return alert("User not found!");
+      users[idx].bio = bio;
+      users[idx].links = links;
+      saveUsers(users);
+      renderProfile();
+      alert("Profile updated!");
+    });
+
+    // ===== Logout =====
+    function logout() {
+      localStorage.removeItem("currentUser");
+      showPage('tiersPage');
+    }
+
+    // ===== Initial Load =====
+    showPage('tiersPage');
+    window.showPage = showPage; // For inline onclicks
+    window.logout = logout;
   </script>
 </body>
 </html>
