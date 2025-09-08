@@ -7,23 +7,38 @@
     h1 { color: orange; }
     .tier { margin: 20px auto; padding: 10px; border: 2px solid #ff6600; border-radius: 8px; background: #222; max-width: 400px; }
     .tier-list { list-style: none; padding: 0; margin: 10px 0 0 0; color: lime; }
-    #adminForm, #logoutBtn { display: none; }
-    #loginForm { margin-bottom: 30px; }
+    #adminForm, #logoutBtn, #profileBtn, #accountPage, #changePassForm { display: none; }
+    #loginForm, #signupForm { margin-bottom: 30px; }
     input, select, button { padding: 8px; margin: 5px; border-radius: 4px; border: none; }
+    .pfp { width: 80px; height: 80px; border-radius: 50%; margin-bottom: 10px; object-fit: cover; }
+    .link-list { list-style: none; padding: 0; }
   </style>
 </head>
 <body>
   <h1>🔥 RoastTiers 😈</h1>
   <p>The official ladder for the best (and worst) roasters.</p>
 
-  <!-- Login form (only shows if not logged in) -->
+  <!-- Login form -->
   <form id="loginForm">
     <input type="text" id="loginUser" placeholder="Username" required>
     <input type="password" id="loginPass" placeholder="Password" required>
     <button type="submit">Login</button>
+    <p>or <a href="#" onclick="showSignup()">Sign Up</a></p>
   </form>
 
-  <!-- Admin form (only shows if logged in as admin) -->
+  <!-- Signup form -->
+  <form id="signupForm">
+    <input type="text" id="signupUser" placeholder="Username" required>
+    <input type="password" id="signupPass" placeholder="Password" required>
+    <input type="text" id="signupBio" placeholder="Bio">
+    <input type="text" id="signupLinks" placeholder="Links (comma-separated)">
+    <input type="text" id="signupPfp" placeholder="Profile Pic URL (optional)">
+    <label><input type="checkbox" id="signupAdmin"> Admin</label>
+    <button type="submit">Sign Up</button>
+    <p>Already have an account? <a href="#" onclick="showLogin()">Log In</a></p>
+  </form>
+
+  <!-- Admin form -->
   <form id="adminForm">
     <input type="text" id="username" placeholder="Name to add" required>
     <select id="tier">
@@ -41,6 +56,25 @@
     <button type="submit">Add Name</button>
   </form>
   <button id="logoutBtn">Logout</button>
+  <button id="profileBtn">My Account</button>
+
+  <!-- Account/Profile Page -->
+  <div id="accountPage">
+    <img id="accountPfp" class="pfp" src="" alt="Profile Pic">
+    <h2 id="accountName"></h2>
+    <p id="accountBio"></p>
+    <ul id="accountLinks" class="link-list"></ul>
+    <button onclick="showChangePass()">Change Password</button>
+    <button onclick="hideAccount()">Back</button>
+  </div>
+
+  <!-- Change Password Form -->
+  <form id="changePassForm">
+    <input type="password" id="oldPass" placeholder="Old password" required>
+    <input type="password" id="newPass" placeholder="New password" required>
+    <button type="submit">Change Password</button>
+    <button type="button" onclick="hideChangePass()">Cancel</button>
+  </form>
 
   <!-- Tier lists -->
   <div class="tier" id="HT1"><b>HT1</b> – Roast Gods<ul class="tier-list"></ul></div>
@@ -53,12 +87,135 @@
   <div class="tier" id="LT3"><b>LT3</b> – Kinda funny sometimes<ul class="tier-list"></ul></div>
   <div class="tier" id="LT4"><b>LT4</b> – Struggle Burns<ul class="tier-list"></ul></div>
   <div class="tier" id="LT5"><b>LT5</b> – Bottom of the barrel<ul class="tier-list"></ul></div>
-
   <script>
-    // Set your admin username/password here!
-    const ADMIN_USERNAME = "admin";
-    const ADMIN_PASSWORD = "roastmaster"; // Change this!
+    // ========== Account System ==========
+    function getUsers() {
+      return JSON.parse(localStorage.getItem("users") || "[]");
+    }
+    function saveUsers(users) {
+      localStorage.setItem("users", JSON.stringify(users));
+    }
+    function getLoggedInUser() {
+      return localStorage.getItem("currentUser") || "";
+    }
+    function setLoggedInUser(username) {
+      localStorage.setItem("currentUser", username);
+    }
+    function hash(s) {
+      // Simple fake hash for demo purposes
+      return btoa(s);
+    }
 
+    // ========== UI Toggle ==========
+    function showLogin() {
+      document.getElementById("loginForm").style.display = "block";
+      document.getElementById("signupForm").style.display = "none";
+      document.getElementById("adminForm").style.display = "none";
+      document.getElementById("logoutBtn").style.display = "none";
+      document.getElementById("profileBtn").style.display = "none";
+      document.getElementById("accountPage").style.display = "none";
+      document.getElementById("changePassForm").style.display = "none";
+    }
+    function showSignup() {
+      document.getElementById("loginForm").style.display = "none";
+      document.getElementById("signupForm").style.display = "block";
+      document.getElementById("adminForm").style.display = "none";
+      document.getElementById("logoutBtn").style.display = "none";
+      document.getElementById("profileBtn").style.display = "none";
+      document.getElementById("accountPage").style.display = "none";
+      document.getElementById("changePassForm").style.display = "none";
+    }
+    function showAccount() {
+      var user = getUsers().find(u => u.username === getLoggedInUser());
+      if(!user) return;
+      document.getElementById("accountPfp").src = user.pfp || "https://avatars.githubusercontent.com/u/583231?v=4";
+      document.getElementById("accountName").textContent = user.username;
+      document.getElementById("accountBio").textContent = user.bio;
+      var links = user.links ? user.links : [];
+      const ul = document.getElementById("accountLinks");
+      ul.innerHTML = "";
+      links.forEach(link => {
+        const li = document.createElement("li");
+        li.innerHTML = `<a href="${link}" target="_blank">${link}</a>`;
+        ul.appendChild(li);
+      });
+      document.getElementById("accountPage").style.display = "block";
+      document.getElementById("adminForm").style.display = "none";
+      document.getElementById("loginForm").style.display = "none";
+      document.getElementById("signupForm").style.display = "none";
+      document.getElementById("changePassForm").style.display = "none";
+      document.getElementById("profileBtn").style.display = "none";
+      document.getElementById("logoutBtn").style.display = "block";
+    }
+    function hideAccount() {
+      checkLogin();
+    }
+    function showChangePass() {
+      document.getElementById("accountPage").style.display = "none";
+      document.getElementById("changePassForm").style.display = "block";
+    }
+    function hideChangePass() {
+      document.getElementById("changePassForm").style.display = "none";
+      showAccount();
+    }
+
+    // ========== Login / Signup ==========
+    document.getElementById("loginForm").addEventListener("submit", function(e) {
+      e.preventDefault();
+      const user = document.getElementById("loginUser").value;
+      const pass = hash(document.getElementById("loginPass").value);
+      const users = getUsers();
+      const found = users.find(u => u.username === user && u.password === pass);
+      if(found) {
+        setLoggedInUser(user);
+        checkLogin();
+      } else {
+        alert("Incorrect login!");
+      }
+    });
+
+    document.getElementById("signupForm").addEventListener("submit", function(e) {
+      e.preventDefault();
+      const username = document.getElementById("signupUser").value.trim();
+      const password = hash(document.getElementById("signupPass").value);
+      const bio = document.getElementById("signupBio").value.trim();
+      const links = document.getElementById("signupLinks").value.trim().split(",").map(l=>l.trim()).filter(l=>l);
+      const pfp = document.getElementById("signupPfp").value.trim();
+      const isAdmin = document.getElementById("signupAdmin").checked;
+      if(!username || !password) return alert("Username and password required!");
+      const users = getUsers();
+      if(users.find(u => u.username === username)) return alert("Username already exists!");
+      users.push({username, password, isAdmin, bio, links, pfp});
+      saveUsers(users);
+      setLoggedInUser(username);
+      checkLogin();
+    });
+
+    document.getElementById("changePassForm").addEventListener("submit", function(e) {
+      e.preventDefault();
+      const oldPass = hash(document.getElementById("oldPass").value);
+      const newPass = hash(document.getElementById("newPass").value);
+      const users = getUsers();
+      const user = getLoggedInUser();
+      const idx = users.findIndex(u => u.username === user);
+      if(idx === -1) return alert("User not found!");
+      if(users[idx].password !== oldPass) return alert("Old password incorrect!");
+      users[idx].password = newPass;
+      saveUsers(users);
+      alert("Password changed!");
+      hideChangePass();
+    });
+
+    // ========== Logout/Profile ==========
+    document.getElementById("logoutBtn").addEventListener("click", function() {
+      localStorage.removeItem("currentUser");
+      checkLogin();
+    });
+    document.getElementById("profileBtn").addEventListener("click", function() {
+      showAccount();
+    });
+
+    // ========== Admin Tier Adding ==========
     const tiers = {
       HT1: [],
       HT2: [],
@@ -72,39 +229,6 @@
       LT5: []
     };
 
-    // Check if logged in
-    function checkLogin() {
-      if(localStorage.getItem("loggedIn") === "yes") {
-        document.getElementById("adminForm").style.display = "block";
-        document.getElementById("logoutBtn").style.display = "inline-block";
-        document.getElementById("loginForm").style.display = "none";
-      } else {
-        document.getElementById("adminForm").style.display = "none";
-        document.getElementById("logoutBtn").style.display = "none";
-        document.getElementById("loginForm").style.display = "block";
-      }
-    }
-
-    // Login form event
-    document.getElementById("loginForm").addEventListener("submit", function(e) {
-      e.preventDefault();
-      const user = document.getElementById("loginUser").value;
-      const pass = document.getElementById("loginPass").value;
-      if(user === ADMIN_USERNAME && pass === ADMIN_PASSWORD) {
-        localStorage.setItem("loggedIn", "yes");
-        checkLogin();
-      } else {
-        alert("Incorrect login!");
-      }
-    });
-
-    // Logout button event
-    document.getElementById("logoutBtn").addEventListener("click", function() {
-      localStorage.removeItem("loggedIn");
-      checkLogin();
-    });
-
-    // Admin form event
     document.getElementById("adminForm").addEventListener("submit", function(e) {
       e.preventDefault();
       const name = document.getElementById("username").value.trim();
@@ -126,6 +250,27 @@
       });
     }
 
+    // ========== Login State Check ==========
+    function checkLogin() {
+      const user = getUsers().find(u => u.username === getLoggedInUser());
+      if(user) {
+        document.getElementById("logoutBtn").style.display = "inline-block";
+        document.getElementById("profileBtn").style.display = "inline-block";
+        if(user.isAdmin) {
+          document.getElementById("adminForm").style.display = "block";
+        } else {
+          document.getElementById("adminForm").style.display = "none";
+        }
+        document.getElementById("loginForm").style.display = "none";
+        document.getElementById("signupForm").style.display = "none";
+        document.getElementById("accountPage").style.display = "none";
+        document.getElementById("changePassForm").style.display = "none";
+      } else {
+        showLogin();
+      }
+    }
+
+    // Initial state
     checkLogin();
   </script>
 </body>
