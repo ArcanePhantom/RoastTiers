@@ -1,1 +1,109 @@
-<!DOCTYPE html> <html> <head> <title>RoastTiers 😈🔥</title> <style> body { font-family: Arial, sans-serif; background: #111; color: #fff; text-align: center; padding: 50px; } h1 { color: orange; } .tier { margin: 20px; padding: 10px; border: 2px solid #ff6600; border-radius: 8px; background: #222; } </style> </head> <body> <h1>🔥 RoastTiers 😈</h1> <p>The official ladder for the best (and worst) roasters.</p> <div class="tier"><b>HT1</b> – Roast Gods</div> <div class="tier"><b>HT2</b> – Elite Roasters</div> <div class="tier"><b>HT3</b> – Consistent Burners</div> <div class="tier"><b>HT4</b> – Crowd-Pleasers</div> <div class="tier"><b>HT5</b> – Average Roasters</div> <div class="tier"><b>LT1</b> – Decent but shaky</div> <div class="tier"><b>LT2</b> – Weak sauce</div> <div class="tier"><b>LT3</b> – Kinda funny sometimes</div> <div class="tier"><b>LT4</b> – Struggle Burns</div> <div class="tier"><b>LT5</b> – Bottom of the barrel</div> </body> </html>
+<!DOCTYPE html>
+<html>
+<head>
+  <title>RoastTiers 😈🔥</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #111;
+      color: #fff;
+      text-align: center;
+      padding: 50px;
+    }
+    h1 {
+      color: orange;
+    }
+    .tier {
+      margin: 20px auto;
+      padding: 10px;
+      border: 2px solid #ff6600;
+      border-radius: 8px;
+      background: #222;
+      max-width: 400px;
+    }
+    .tier-list {
+      list-style: none;
+      padding: 0;
+      margin: 10px 0 0 0;
+      color: lime;
+    }
+    form {
+      margin-bottom: 30px;
+    }
+    input, select, button {
+      padding: 8px;
+      margin: 5px;
+      border-radius: 4px;
+      border: none;
+    }
+  </style>
+</head>
+<body>
+  <h1>🔥 RoastTiers 😈</h1>
+  <p>The official ladder for the best (and worst) roasters.</p>
+  <form id="addForm" autocomplete="off">
+    <input type="text" id="username" placeholder="Your name" required>
+    <select id="tier">
+      <option value="HT1">HT1 – Roast Gods</option>
+      <option value="HT2">HT2 – Elite Roasters</option>
+      <option value="HT3">HT3 – Consistent Burners</option>
+      <option value="HT4">HT4 – Crowd-Pleasers</option>
+      <option value="HT5">HT5 – Average Roasters</option>
+      <option value="LT1">LT1 – Decent but shaky</option>
+      <option value="LT2">LT2 – Weak sauce</option>
+      <option value="LT3">LT3 – Kinda funny sometimes</option>
+      <option value="LT4">LT4 – Struggle Burns</option>
+      <option value="LT5">LT5 – Bottom of the barrel</option>
+    </select>
+    <button type="submit">Add Me!</button>
+  </form>
+
+  <div class="tier" id="HT1"><b>HT1</b> – Roast Gods<ul class="tier-list"></ul></div>
+  <div class="tier" id="HT2"><b>HT2</b> – Elite Roasters<ul class="tier-list"></ul></div>
+  <div class="tier" id="HT3"><b>HT3</b> – Consistent Burners<ul class="tier-list"></ul></div>
+  <div class="tier" id="HT4"><b>HT4</b> – Crowd-Pleasers<ul class="tier-list"></ul></div>
+  <div class="tier" id="HT5"><b>HT5</b> – Average Roasters<ul class="tier-list"></ul></div>
+  <div class="tier" id="LT1"><b>LT1</b> – Decent but shaky<ul class="tier-list"></ul></div>
+  <div class="tier" id="LT2"><b>LT2</b> – Weak sauce<ul class="tier-list"></ul></div>
+  <div class="tier" id="LT3"><b>LT3</b> – Kinda funny sometimes<ul class="tier-list"></ul></div>
+  <div class="tier" id="LT4"><b>LT4</b> – Struggle Burns<ul class="tier-list"></ul></div>
+  <div class="tier" id="LT5"><b>LT5</b> – Bottom of the barrel<ul class="tier-list"></ul></div>
+
+  <script>
+    // Object to hold names for each tier
+    const tiers = {
+      HT1: [],
+      HT2: [],
+      HT3: [],
+      HT4: [],
+      HT5: [],
+      LT1: [],
+      LT2: [],
+      LT3: [],
+      LT4: [],
+      LT5: []
+    };
+
+    document.getElementById("addForm").addEventListener("submit", function(e) {
+      e.preventDefault();
+      const name = document.getElementById("username").value.trim();
+      const tier = document.getElementById("tier").value;
+      if(name) {
+        tiers[tier].push(name);
+        updateTierDisplay(tier);
+        document.getElementById("username").value = "";
+      }
+    });
+
+    function updateTierDisplay(tier) {
+      const ul = document.querySelector(`#${tier} .tier-list`);
+      ul.innerHTML = "";
+      tiers[tier].forEach(person => {
+        const li = document.createElement("li");
+        li.textContent = person;
+        ul.appendChild(li);
+      });
+    }
+  </script>
+</body>
+</html>
